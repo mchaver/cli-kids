@@ -5,6 +5,8 @@ open Types
 @val external focus: Dom.element => unit = "focus"
 @val external setTimeout: (unit => unit, int) => int = "setTimeout"
 @send external repeat: (string, int) => string = "repeat"
+@set external setScrollTop: (Dom.element, int) => unit = "scrollTop"
+@get external getScrollHeight: Dom.element => int = "scrollHeight"
 
 @react.component
 let make = (
@@ -28,6 +30,7 @@ let make = (
   let (completedObjectives, setCompletedObjectives) = React.useState(() => [])
   let (showHint, setShowHint) = React.useState(() => None)
   let inputRef = React.useRef(Null.null)
+  let outputRef = React.useRef(Null.null)
 
   // Auto-focus input
   React.useEffect0(() => {
@@ -37,6 +40,15 @@ let make = (
     }
     None
   })
+
+  // Auto-scroll to bottom when output changes
+  React.useEffect1(() => {
+    switch outputRef.current->Null.toOption {
+    | Some(element) => setScrollTop(element, getScrollHeight(element))
+    | None => ()
+    }
+    None
+  }, [output])
 
   // Check objectives
   React.useEffect2(() => {
@@ -254,7 +266,7 @@ let make = (
       }}
     </div>
 
-    <div className="terminal-output">
+    <div className="terminal-output" ref={outputRef->Obj.magic}>
       {Array.map(output, (line) => {
         let className = if line.isCommand {
           "terminal-line command"
