@@ -12,11 +12,14 @@ open Types
 let make = (
   ~level: level,
   ~onComplete: unit => unit,
+  ~onBack: unit => unit,
 ) => {
   let (output, setOutput) = React.useState(() => [
+    {text: "="->repeat(60), isError: false, isCommand: false},
     {text: level.story, isError: false, isCommand: false},
+    {text: "="->repeat(60), isError: false, isCommand: false},
     {text: "", isError: false, isCommand: false},
-    {text: "Type 'help' for available commands.", isError: false, isCommand: false},
+    {text: "Type 'help' for available commands or 'exit' to return to menu.", isError: false, isCommand: false},
     {text: "", isError: false, isCommand: false},
   ])
 
@@ -175,10 +178,13 @@ let make = (
         `user@cli-kids:${path}$ `
       }
 
-      // Handle clear command specially
-      if String.trim(input) == "clear" {
+      // Handle special commands
+      let trimmedInput = String.trim(input)
+      if trimmedInput == "clear" {
         setOutput(_ => [])
         setInput(_ => "")
+      } else if trimmedInput == "exit" || trimmedInput == "menu" {
+        onBack()
       } else {
 
     // Execute command
@@ -247,7 +253,7 @@ let make = (
       {Array.map(level.objectives, obj => {
         let isCompleted = Array.includes(completedObjectives, obj.id)
         <div key={obj.id} className={isCompleted ? "objective completed" : "objective"}>
-          <span className="objective-icon">{React.string(isCompleted ? "✓" : "○")}</span>
+          <span className="objective-icon">{React.string(isCompleted ? "[X]" : "[ ]")}</span>
           <span className="objective-text">{React.string(obj.description)}</span>
         </div>
       })->React.array}
@@ -255,7 +261,7 @@ let make = (
       {switch (currentObjective, showHint) {
       | (Some(_), None) =>
         <button className="hint-button" onClick={_ => handleHintClick()}>
-          {React.string("💡 Show Hint")}
+          {React.string("[?] Show Hint")}
         </button>
       | (Some(_), Some(hint)) =>
         <div className="hint-box">

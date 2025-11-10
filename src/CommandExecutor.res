@@ -191,6 +191,7 @@ let executeCommand = (input: string, state: terminalState): (commandResult, term
   grep [pattern] [file] - Search for pattern in file
   find -name [pattern] - Find files by name
   clear     - Clear terminal
+  exit      - Return to main menu
   help      - Show this help`
     (Success(helpText), state)
 
